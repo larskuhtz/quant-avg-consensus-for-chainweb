@@ -1,0 +1,78 @@
+cabal-version: 3.0
+name: quant-avg-consensus
+version: 0.1.0
+synopsis: Quantized Average Consensus on Chainweb Graphs
+description: Simulation of convergence of quantized average consensus on Degree Diameter graphs as used in Chainweb.
+homepage: https://github.com/larskuhtz/quant-avg-consensus
+bug-reports: https://github.com/kadena-io/quant-avg-consensus/issues
+license: MIT
+license-file: LICENSE
+author: Lars Kuhtz
+maintainer: lakuhtz@gmail.com
+copyright: Copyright (c) 2025 Lars Kuhtz
+category: Data, Algorithms, Chainweb, Blockchain
+tested-with:
+    GHC==9.12
+extra-doc-files:
+    README.md
+
+source-repository head
+    type: git
+    location: https://github.com/larskuhtz/quant-avg-consensus.git
+
+library
+    hs-source-dirs: src
+    default-language: Haskell2010
+    ghc-options:
+        -Wall
+    exposed-modules:
+        QuantAvgConsensus.Dense
+        QuantAvgConsensus.Utils
+        QuantAvgConsensus.Sparse
+    build-depends:
+        , base >=4.11 && <5
+        , containers >=0.5
+        , deepseq >=1.4
+        , hashable >=1.2
+        , massiv >=0.3
+        , mwc-random >=0.14
+        , streaming >=0.2
+        , transformers >=0.5
+        , unordered-containers >=0.2
+        , digraph >=0.3
+        , aeson >=2.2
+        , bytestring >=0.12
+        , vector >=0.13
+        , unliftio >=0.2
+        , random >=1.3
+
+executable quant-avg-consensus
+    hs-source-dirs: main
+    default-language: Haskell2010
+    main-is: Main.hs
+    ghc-options:
+        -Wall
+        -threaded
+        -with-rtsopts=-N
+        -O2
+    build-depends:
+        -- internal
+        , quant-avg-consensus
+
+        -- external
+        , base >=4.11 && <5
+        , hashable >=1.2
+        , massiv >=0.3
+        , mwc-random >=0.14
+        , streaming >=0.2
+        , transformers >=0.5
+        , unordered-containers >=0.2
+        , unordered-containers >=0.2
+        , mwc-random >=0.14
+        , digraph >=0.3
+        , aeson >=2.2
+        , bytestring >=0.12
+        , vector >=0.13
+        , unliftio >=0.2
+        , random >=1.3
+

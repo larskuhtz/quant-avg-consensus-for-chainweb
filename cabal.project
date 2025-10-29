@@ -1,0 +1,4 @@
+packages: quant-avg-consensus.cabal
+
+package quant-avg-consensus
+  optimization: True
