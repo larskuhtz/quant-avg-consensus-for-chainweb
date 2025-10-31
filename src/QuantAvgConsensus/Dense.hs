@@ -15,9 +15,12 @@ module QuantAvgConsensus.Dense
 , degree
 , randomX0
 , stepN
-, run
+, runRandom
+, runMatrix
 , runN
 , runSteps
+, runCase
+, runCases
 )
 where
 
@@ -66,7 +69,6 @@ degree :: AdjMatrix -> Int
 degree m = A.sum $ m A.!> 0
 {-# INLINE degree #-}
 
-
 randomX0 :: AdjMatrix -> IO LabelingD
 randomX0 m = do
     gen <- R.newStdGen
@@ -89,14 +91,26 @@ stepN n m x = foldl' (\acc _ -> go acc) x [1..n]
     d = degree m
 {-# INLINE stepN #-}
 
-run :: G.DiGraph Int -> Int -> Int -> IO (Double, Int)
-run graph precision n = do
-    x0 <- (A..* precision) <$> randomX0 m
-    let !expected = mean (realToFrac <$> A.toList x0) / fromIntegral precision
-    let !results = round @_ @Int . (% precision) <$> A.toVector (stepN n m x0)
-    let !converged = maximum results - minimum results
-    let !e = expected - realToFrac (V.head results)
-    return (e, converged)
+-- | Run a number of steps for a given initial labeling and return
+-- the error and delta.
+--
+runMatrix :: AdjMatrix -> LabelingD -> Int -> Int -> (Double, Int)
+runMatrix m x0 precision n =
+    ( expected - realToFrac (V.head results)
+    , maximum results - minimum results
+    )
+  where
+    x0' = x0 A..* precision
+    !expected = mean (realToFrac <$> A.toList x0') / fromIntegral precision
+    !results = round @_ @Int . (% precision) <$> A.toVector (stepN n m x0')
+
+-- | Run a number of steps for a random initial labeling and return
+-- the error and delta.
+--
+runRandom :: G.DiGraph Int -> Int -> Int -> IO (Double, Int)
+runRandom graph precision n = do
+    x0 <- randomX0 m
+    return $ runMatrix m x0 precision n
   where
     m = graphToAdjMatrix graph
 
@@ -111,13 +125,39 @@ run graph precision n = do
 
 runN :: Int -> G.DiGraph Int -> Int -> Int -> IO Result
 runN count g precision n = do
-    results <- pooledMapConcurrently (const $ run g precision n) [1..count]
+    results <- pooledMapConcurrently (const $ runRandom g precision n) [1..count]
     return $ Result
         { steps = n
         , err = stats $ fst <$> results
         , convergenceCount = length $ filter ((== 0) . snd) results
         , delta = stats $ snd <$> results
         }
+
+runCase :: G.DiGraph Int -> Int -> Int -> String -> (Int -> Int) -> CaseResult
+runCase g p n name f =  CaseResult
+    { caseName = name
+    , caseError = cerr
+    , caseDelta = cdelta
+    }
+  where
+    (!cerr, !cdelta) = runMatrix m x0 p n
+    x0 = A.makeArray A.Seq (A.Sz1 (order m)) f
+    m = graphToAdjMatrix g
+
+runCases :: G.DiGraph Int -> Int -> Int -> [CaseResult]
+runCases g p n = uncurry (runCase g p n) <$> cases
+  where
+    cases :: [(String, Int -> Int)]
+    cases =
+        [ ("i == 0 ? epoch : 0", \i -> if i == 0 then epoch else 0)
+        , ("even i ? epoch : 0", \i -> if even i then epoch else 0)
+        , ("i == 0 ? epoch / 2 : 0", \i -> if i == 0 then epoch `quot` 2 else 0)
+        , ("even i ? epoch / 2 : 0", \i -> if even i then epoch `quot` 2 else 0)
+        , ("const 1", const 1)
+        , ("const epoch", const epoch)
+        , ("const (epoch / 2))", \_ -> epoch `quot` 2)
+        , ("linear", (* 120))
+        ]
 
 -- -------------------------------------------------------------------------- --
 -- main

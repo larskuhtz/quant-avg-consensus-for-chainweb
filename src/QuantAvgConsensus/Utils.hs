@@ -15,6 +15,7 @@ module QuantAvgConsensus.Utils
 , stats
 , mean
 , Result(..)
+, CaseResult(..)
 , readGraph
 ) where
 
@@ -59,6 +60,13 @@ data Result = Result
     , err :: !(Stats Double)
     , convergenceCount :: !Int
     , delta :: !(Stats Int)
+    }
+    deriving (Show, Generic, ToJSON)
+
+data CaseResult = CaseResult
+    { caseName :: String
+    , caseError :: Double
+    , caseDelta :: Int
     }
     deriving (Show, Generic, ToJSON)
 

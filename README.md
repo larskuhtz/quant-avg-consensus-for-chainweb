@@ -55,3 +55,16 @@ This generates an output that looks like similar to the following:
 {"convergenceCount":1000000,"delta":{"avg":0,"max":0,"median":0,"min":0},"err":{"avg":2.4516199999999887e-2,"max":0.5,"median":0,"min":-0.4500000000007276},"steps":45}
 {"convergenceCount":1000000,"delta":{"avg":0,"max":0,"median":0,"min":0},"err":{"avg":2.485050000000043e-2,"max":0.5,"median":0,"min":-0.4500000000007276},"steps":46}
 ```
+
+To get results for some special cases run the following command:
+
+```bash
+cabal run quant-avg-consensus cases -g d4k4 -p 1000 -c 60
+```
+
+or use the following script to get results for all graphs:
+
+```bash
+./cases.sh
+```
+

@@ -58,10 +58,12 @@ main = do
             mainSamples $ foldl (flip id) (Opts G.d4k4 100000 1000 120) opts_
         ["stats"] ->
             mainStats $ foldl (flip id) (Opts G.d4k4 1000 1000 120) opts_
+        ["cases"] ->
+            mainCases $ foldl (flip id) (Opts G.d4k4 10000 1000 120) opts_
         e -> error $ "Unknown command or arguments: " <> show e
             <> "\n" <> usageInfo header options
   where
-    header = "Usage: quant-avg-consensus COMMAND [OPTIONS]\nCommands: samples|stats\nOptions:"
+    header = "Usage: quant-avg-consensus COMMAND [OPTIONS]\nCommands: samples|stats|cases\nOptions:"
 
 mainSamples :: Opts -> IO ()
 mainSamples opts = do
@@ -83,3 +85,10 @@ mainStats opts = do
         (_optsStepCount opts)
     BL8.putStrLn $ encode r
 
+mainCases :: Opts -> IO ()
+mainCases opts = do
+    let results = runCases
+            (_optsGraph opts)
+            (_optsPrecision opts)
+            (_optsStepCount opts)
+    BL8.putStrLn $ encode results
